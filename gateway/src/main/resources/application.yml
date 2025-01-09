@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    discovery:
+      eureka:
+        enabled: true
+    gateway:
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowed-origins: "http://localhost:5173"
+            allowed-methods: "GET, POST, PUT, DELETE"
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+server:
+  port: 8888
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    preferIpAddress: true
+    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Actuator configuration
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: 
+          - health
+          - info
+          - metrics
+          - prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  observations:
+    key-values:
+      application: ${spring.application.name}

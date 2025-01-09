@@ -1,0 +1,79 @@
+# ace-ms-eurk-fg: ACE Microservices Eureka Feign
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ace-ms-eurk-wc
+  # Euraka service
+  eureka-server:
+    # image: marouanedbibih/ace-eureka-ms:eureka-feign
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - ace-ms-eurk-wc
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+  # Client Service
+  client-service:
+    # image: marouanedbibih/ace-client-ms:eureka-feign
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    networks:
+      - ace-ms-eurk-wc
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mysql
+      - eureka-server
+  # Car Service
+  car-service:
+    # image: marouanedbibih/ace-car-ms:eureka-feign
+    build:
+      context: ./car
+      dockerfile: Dockerfile
+    networks:
+      - ace-ms-eurk-wc
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mysql
+      - eureka-server
+  # Gateway service
+  gateway:
+    # image: marouanedbibih/ace-gateway-ms:eureka-feign
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    networks:
+      - ace-ms-eurk-wc
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - client-service
+      - car-service
+# Volumes
+volumes:
+  mysql-data:
+
+# Networks
+networks:
+  ace-ms-eurk-wc:
+    driver: bridge

@@ -1,0 +1,51 @@
+server:
+  port: 8801
+# Spring Config
+spring:
+  application:
+    name: client-service
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://mysql:3306/clients_db?createDatabaseIfNotExist=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DATABASE_USERNAME:user}
+    password: ${DATABASE_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+# Eureka Config
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true 
+
+# Logging Config
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.springframework: INFO
+
+# Actuator configuration
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: 
+          - health
+          - info
+          - metrics
+          - prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  observations:
+    key-values:
+      application: ${spring.application.name}
